@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="vue.js"></script>
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding:0;
+            list-style: none;
+        }
+        body{
+            font-size: 16px;
+            background: #CDCDCD;
+            display: block;
+        }
+        header{
+            height: 50px;
+            background: rgba(47,47,47,0.98);
+        }
+        section{
+            width:600px;
+            padding: 0 10px;
+            margin: 0 auto;
+            line-height: 50px;
+            color:#fff;
+        }
+        section>label {
+            float: left;
+            width: 100px;
+            line-height: 50px;
+            color: #DDD;
+            font-size: 24px;
+            cursor: pointer;
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            margin-right: 50px;
+        }
+        header input {
+            float: right;
+            width: 60%;
+            height: 24px;
+            margin-top: 12px;
+            text-indent: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.24), 0 1px 6px rgba(0,0,0,0.45) inset;
+            border: none;
+        }
+        input, textawrea, select, button {
+            text-rendering: auto;
+            color: initial;
+            letter-spacing: normal;
+            word-spacing: normal;
+            text-transform: none;
+            text-indent: 0px;
+            text-shadow: none;
+            display: inline-block;
+            text-align: start;
+            margin: 0em;
+            font: 400 13.3333px Arial;
+        }
+
+        h2{
+            line-height: 2em;
+        }
+        ul{
+            width:auto;
+            height:auto;
+        }
+        li{
+            width:600px;
+            padding: 0 10px;
+            height: 30px;
+            margin-bottom: 10px;
+            line-height: 30px;
+            background: #fff;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        ul>li>.opt{
+            width:12px;
+            height:12px;
+            border:1px solid #999999;
+            border-radius: 50%;
+            float:left;
+            margin-right: 10px;
+            margin-top: 8px;
+            cursor:pointer;
+
+        }
+        ul>li>div{
+            float: left;
+            color:#000;
+        }
+        li>button{
+            float:right;
+            padding: 5px 12px;
+            border-radius:3px;
+            background: #CDCDCD;
+        }
+        .right>input{
+            width:60px;
+            text-align: center;
+            margin-right: 10px;
+            height: 30px;
+        }
+        .check{
+            color:red;
+        }
+        .red{
+            background:red;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <header>
+            <section>
+               ToDoList
+                <input type="text" placeholder="添加内容" @keydown.13="add" v-model="con">
+            </section>
+        </header>
+        <section>
+            <div class="right">
+                <input type="button" value="全部" @click="changestatus('all')" :class="{check:status=='all'}">
+                <input type="button" value="已完成" @click="changestatus('1')" :class="{check:status=='1'}">
+                <input type="button" value="未完成" @click="changestatus('0')" :class="{check:status=='0'}">
+            </div>
+            <ul class="list" v-show="datas.length">
+                <li  v-for="item in datas">
+                    <span class="opt" @click="changestatu(item)" :class="{red:item.statu==1}"></span>
+
+                    <div v-if="item.edit" @dblclick="edit(item)">
+                        <p>
+                            {{item.title}}
+                        </p>
+                    </div>
+
+                    <div v-else>
+                        <input type="text" v-model="item.title" @blur="edit(item)">
+                    </div>
+
+
+                    <button class="del" @click="del(item.id)">删除</button>
+                </li>
+
+            </ul>
+            <div v-show="!datas.length">没有数据</div>
+        </section>
+    </div>
+    <script>
+        new Vue({
+            el:"#root",
+            data:{
+                all:localStorage.todu?JSON.parse(localStorage.todu):[],
+                con:"",
+                status:"all",
+            },
+            methods: {
+                add() {
+                    if (!this.con) {
+                        alert("请输入内容");
+                        return;
+                    }
+                    let obj = {};
+                    obj.id = Math.random() + new Date().getTime();
+                    obj.title = this.con;
+                    obj.statu = 0;
+                    obj.edit=true;
+                    this.all.push(obj);
+                    this.con = "";
+                    console.log(this.all)
+                    localStorage.todu=JSON.stringify(this.all);
+                },
+                changestatus(val) {
+                    this.status = val;
+                    localStorage.todu=JSON.stringify(this.all);
+                },
+                changestatu(obj){
+                    if(obj.statu == 0){
+                        obj.statu=1
+                    }else{
+                        obj.statu=0
+                    }
+                    localStorage.todu=JSON.stringify(this.all);
+                },
+                del(id) {
+                    this.all = this.all.filter(function (a) {
+                        return a.id != id;
+                    })
+                    localStorage.todu=JSON.stringify(this.all);
+                },
+                edit(obj){
+                    obj.edit=(!obj.edit);
+                    localStorage.todu=JSON.stringify(this.all);
+                }
+            },
+            computed:{
+                datas:function(){
+                    return this.all.filter((a)=>{
+                        if(this.status=="all"){
+                            return a;
+                        }else{
+                            if(this.status == a.statu){
+                                return a;
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+</body>
+</html>
